@@ -8,7 +8,7 @@ marker = '// Generated workspace strings — edit js/workspace-strings.json, the
 if marker in text:
     text = text[:text.index(marker)].rstrip() + '\n'
 strings = {}
-for name in ('finance-strings.json', 'workspace-strings.json', 'extra-strings.json'):
+for name in ('finance-strings.json', 'workspace-strings.json', 'extra-strings.json', 'phase4-strings.json', 'cloud-strings.json'):
     strings.update(json.loads((ROOT / 'js' / name).read_text()))
 optional = ROOT / 'js' / 'station2-strings.json'
 if optional.exists():

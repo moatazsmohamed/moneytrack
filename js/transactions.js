@@ -44,7 +44,7 @@ export function openTransaction(id = null, type = 'expense') {
     title: t(existing ? 'finance.transaction.editTitle' : 'finance.transaction.addTitle'),
     submitLabel: t(existing ? 'finance.actions.save' : 'finance.actions.add'),
     body: `<div class="form-grid"><label class="field span-2"><span>${t('finance.fields.title')}</span><input id="transaction-title" name="title" required maxlength="180" value="${e(current.title)}" placeholder="${t('finance.transaction.titlePlaceholder')}" autofocus></label><label class="field"><span>${t('finance.fields.amount')} (${e(state.prefs.currency)})</span><input id="transaction-amount" name="amount" type="number" inputmode="decimal" step="0.01" min="0.01" max="1000000000000" required value="${e(current.amount)}"></label><label class="field"><span>${t('finance.fields.type')}</span><select id="transaction-type" name="type">${['income','expense'].map(x => `<option value="${x}" ${current.type === x ? 'selected' : ''}>${t('finance.type.' + x)}</option>`).join('')}</select></label><label class="field"><span>${t('finance.fields.category')}</span><select id="transaction-category" name="categoryId" required>${options(current.type, current.categoryId)}</select></label><label class="field"><span>${t('finance.fields.date')}</span><input id="transaction-date" type="date" name="date" required value="${current.date}"></label><label class="field span-2"><span>${t('finance.fields.description')}</span><textarea id="transaction-description" name="description" maxlength="1000" placeholder="${t('finance.transaction.descriptionPlaceholder')}">${e(current.description)}</textarea></label></div>`,
-    onSubmit: data => {
+    onSubmit: async data => {
       const title = String(data.get('title') || '').trim(), description = String(data.get('description') || '').trim();
       const nextType = data.get('type'), categoryId = data.get('categoryId'), date = data.get('date');
       if (!title || title.length > 180) throw new Error(t('finance.validation.title'));
@@ -54,7 +54,7 @@ export function openTransaction(id = null, type = 'expense') {
       if (!getState().categories.some(c => c.id === categoryId && c.type === nextType)) throw new Error(t('finance.validation.category'));
       const amount = parseAmount(data.get('amount'));
       try {
-        update(s => {
+        await update(s => {
           const next = { id: id || uid(), title, description, type: nextType, categoryId, date, amount, demo: false };
           const index = s.transactions.findIndex(x => x.id === id);
           if (id && index < 0) throw new Error(t('finance.transaction.notFound'));
@@ -87,7 +87,7 @@ export function bindTransactionActions(container) {
     if (!remove || !container.contains(remove)) return;
     const tx = getState().transactions.find(x => x.id === remove.dataset.deleteTx);
     if (!tx || !await confirmDialog(t('finance.transaction.deleteTitle'), t('finance.transaction.deleteMessage', { name: tx.title }))) return;
-    try { update(s => { s.transactions = s.transactions.filter(x => x.id !== tx.id); }); toast(t('finance.transaction.deleted')); }
+    try { await update(s => { s.transactions = s.transactions.filter(x => x.id !== tx.id); }); toast(t('finance.transaction.deleted')); }
     catch { toast(t('storageError'), 'error'); }
   });
 }

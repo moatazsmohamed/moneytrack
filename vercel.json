@@ -1,1 +1,14 @@
-{"buildCommand":"python3 build.py","outputDirectory":"dist","framework":null,"headers":[{"source":"/(.*)","headers":[{"key":"X-Content-Type-Options","value":"nosniff"}]}]}
+{
+  "framework": null,
+  "buildCommand": "node scripts/build-vercel.js",
+  "outputDirectory": "vercel-public",
+  "rewrites": [
+    { "source": "/:path*", "destination": "https://moneytrack-szwtxpxu.manus.space/:path*" }
+  ],
+  "headers": [
+    { "source": "/:path*", "headers": [
+      { "key": "X-Content-Type-Options", "value": "nosniff" },
+      { "key": "Cache-Control", "value": "no-store" }
+    ] }
+  ]
+}

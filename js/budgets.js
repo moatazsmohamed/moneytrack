@@ -49,8 +49,7 @@ function monthTransactions(state, month) {
   return state.transactions.filter((transaction) => transaction.date.slice(0, 7) === month && transaction.type === 'expense');
 }
 
-export function budgetSummary(month = monthKey()) {
-  const state = getState();
+export function budgetSummary(month = monthKey(), state = getState()) {
   const stored = state.budgets?.[month] || { total: 0, categories: {} };
   const totalCents = storedMoneyCents(stored.total);
   const expenses = monthTransactions(state, month);
@@ -102,7 +101,7 @@ export function openBudgetEditor(month = selectedMonth) {
         if (value > 0) categories[category.id] = value;
       });
       try {
-        update((draft) => {
+        await update((draft) => {
           draft.budgets[month] = { total, categories };
         });
       } catch {
@@ -119,7 +118,7 @@ export function openBudgetEditor(month = selectedMonth) {
 async function resetMonth() {
   if (!await confirmDialog(t('finance.budget.resetTitle'), t('finance.budget.resetMessage', { month: selectedMonth }))) return;
   try {
-    update((draft) => {
+    await update((draft) => {
       delete draft.budgets[selectedMonth];
     });
   } catch {

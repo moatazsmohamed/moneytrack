@@ -1,0 +1,2 @@
+# Pure JavaScript dependencies: no install-time build scripts are required.
+allowBuilds: {}

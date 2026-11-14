@@ -1,12 +1,27 @@
 {
   "name": "moneytrack",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
-  "description": "Local-first bilingual personal finance app \u2014 HTML, CSS, Vanilla JavaScript",
+  "description": "Bilingual multi-user finance platform — HTML, CSS, Vanilla JavaScript, Node.js and MySQL",
+  "packageManager": "pnpm@11.25.0",
+  "engines": { "node": ">=22.23.0" },
   "scripts": {
-    "dev": "python3 -m http.server 3000 --bind 0.0.0.0",
-    "build": "python3 build.py",
-    "test": "node --test tests/*.test.js"
+    "dev": "node --env-file-if-exists=.env server/index.js",
+    "start": "node --env-file-if-exists=.env server/index.js",
+    "build": "node scripts/build.js",
+    "migrate": "node --env-file-if-exists=.env server/migrate.js",
+    "bootstrap:admin": "node --env-file-if-exists=.env scripts/bootstrap-admin.js",
+    "test": "node --test tests/*.test.js",
+    "test:integration": "node --env-file-if-exists=.env --test tests/integration/*.test.js"
+  },
+  "dependencies": {
+    "express": "5.3.0",
+    "mysql2": "3.24.6",
+    "nodemailer": "10.5.0",
+    "cookie-parser": "1.4.7"
+  },
+  "devDependencies": {
+    "smtp-server": "3.21.4"
   }
 }

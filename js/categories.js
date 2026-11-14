@@ -22,7 +22,8 @@ function safeColor(value) {
 function usedInfo(state, category) {
   const transactions = state.transactions.filter((transaction) => transaction.categoryId === category.id).length;
   const budgetMonths = Object.values(state.budgets || {}).filter((budget) => Object.prototype.hasOwnProperty.call(budget.categories || {}, category.id)).length;
-  return { transactions, budgetMonths, used: transactions > 0 || budgetMonths > 0 };
+  const recurring = (state.recurring || []).filter(rule => rule.categoryId === category.id).length;
+  return { transactions, budgetMonths, recurring, used: transactions > 0 || budgetMonths > 0 || recurring > 0 };
 }
 
 function categoryForm(category = null) {
@@ -63,7 +64,7 @@ export function openCategory(id = null) {
       if (currentState.categories.some((item) => item.id !== next.id && (item.names.en.toLocaleLowerCase() === next.names.en.toLocaleLowerCase() || item.names.ar === next.names.ar))) {
         throw new Error(t('finance.validation.duplicateCategory'));
       }
-      update((draft) => {
+      await update((draft) => {
         const index = draft.categories.findIndex((item) => item.id === next.id);
         if (index >= 0) draft.categories[index] = next;
         else draft.categories.push(next);
@@ -83,7 +84,7 @@ async function deleteCategory(id) {
   if (!info.used) {
     if (!await confirmDialog(t('finance.category.deleteTitle'), t('finance.category.deleteMessage', { name: catName(category) }))) return;
     try {
-      update((draft) => {
+      await update((draft) => {
         draft.categories = draft.categories.filter((item) => item.id !== id);
         Object.values(draft.budgets || {}).forEach((budget) => { delete budget.categories[id]; });
       });
@@ -110,13 +111,13 @@ async function deleteCategory(id) {
       const replacement = getState().categories.find((item) => item.id === replacementId && item.type === category.type && item.id !== id);
       if (!replacement) throw new Error(t('finance.validation.replacement'));
       try {
-        update((draft) => {
+        await update((draft) => {
           draft.transactions.forEach((transaction) => {
             if (transaction.categoryId === id) transaction.categoryId = replacementId;
           });
           Object.values(draft.budgets || {}).forEach((budget) => { delete budget.categories[id]; });
           draft.categories = draft.categories.filter((item) => item.id !== id);
-        });
+        }, { categoryReplacements: { [id]: replacementId } });
       } catch {
         throw new Error(t('storageError'));
       }
