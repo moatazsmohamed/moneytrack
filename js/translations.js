@@ -855,7 +855,10 @@ Object.assign(translations.en, {
   "budgetSubtitle": "Give every pound a purpose, one month at a time.",
   "budgetEyebrow": "Spend with intention",
   "categoryEyebrow": "A place for every transaction",
-  "unallocated": "No category budget set"
+  "unallocated": "No category budget set",
+  "downloadRecovery": "Previous workspace recovery",
+  "downloadRecoveryHint": "Download the copy saved immediately before your last restore. Import it to recover that workspace.",
+  "setCategoryBudget": "Set category budget"
 });
 Object.assign(translations.ar, {
   "finance.actions.add": "إضافة",
@@ -1092,5 +1095,8 @@ Object.assign(translations.ar, {
   "budgetSubtitle": "حدد هدفاً لكل جنيه، شهراً بعد شهر.",
   "budgetEyebrow": "إنفاق وفق خطة",
   "categoryEyebrow": "فئة لكل معاملة",
-  "unallocated": "لم تُحدد ميزانية لهذه الفئة"
+  "unallocated": "لم تُحدد ميزانية لهذه الفئة",
+  "downloadRecovery": "استرجاع مساحة العمل السابقة",
+  "downloadRecoveryHint": "حمّل النسخة التي حُفظت قبل آخر استعادة مباشرة. استوردها لاسترجاع مساحة العمل السابقة.",
+  "setCategoryBudget": "تحديد ميزانية الفئة"
 });

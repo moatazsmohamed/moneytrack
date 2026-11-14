@@ -71,3 +71,16 @@ export function doughnutChart(id, spending) {
 export function trendChart(id, series) {
   chart(id, 'line', { labels: series.map(x => x.label), datasets: [{ label: t('netSavings'), data: series.map(x => x.savings), borderColor: '#188d72', backgroundColor: '#188d7211', fill: true, tension: .35, borderWidth: 2, pointRadius: 3, pointBackgroundColor: '#188d72' }] });
 }
+
+/** All months in a short custom range; yearly buckets for longer ranges, without dropping transactions. */
+export function rangeSeries(list, start, end) {
+  const [sy, sm] = start.slice(0, 7).split('-').map(Number), [ey, em] = end.slice(0, 7).split('-').map(Number);
+  const months = (ey - sy) * 12 + em - sm + 1;
+  const yearly = months > 24;
+  const keys = yearly ? Array.from({ length: ey - sy + 1 }, (_, i) => String(sy + i)) : Array.from({ length: months }, (_, i) => localDate(new Date(sy, sm - 1 + i, 1)).slice(0, 7));
+  return keys.map(key => {
+    const rows = list.filter(x => x.date.startsWith(key));
+    const income = sum(rows, 'income'), expense = sum(rows, 'expense');
+    return { key, label: yearly ? key : monthLabel(key, months <= 12), income, expense, savings: Number((income - expense).toFixed(2)) };
+  });
+}

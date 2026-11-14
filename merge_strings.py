@@ -10,6 +10,9 @@ if marker in text:
 strings = {}
 for name in ('finance-strings.json', 'workspace-strings.json', 'extra-strings.json'):
     strings.update(json.loads((ROOT / 'js' / name).read_text()))
+optional = ROOT / 'js' / 'station2-strings.json'
+if optional.exists():
+    strings.update(json.loads(optional.read_text()))
 for locale in ('en', 'ar'):
     pairs = {key: value[locale] for key, value in strings.items()}
     if locale == 'en': text += '\n' + marker + '\n'

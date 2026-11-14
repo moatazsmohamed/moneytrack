@@ -8,6 +8,8 @@
  "budgetEyebrow":{"en":"Spend with intention","ar":"إنفاق وفق خطة"},
  "categoryEyebrow":{"en":"A place for every transaction","ar":"فئة لكل معاملة"},
  "unallocated":{"en":"No category budget set","ar":"لم تُحدد ميزانية لهذه الفئة"},
+ "downloadRecovery":{"en":"Previous workspace recovery","ar":"استرجاع مساحة العمل السابقة"},
+ "downloadRecoveryHint":{"en":"Download the copy saved immediately before your last restore. Import it to recover that workspace.","ar":"حمّل النسخة التي حُفظت قبل آخر استعادة مباشرة. استوردها لاسترجاع مساحة العمل السابقة."},
  "finance.icon.laptop":{"en":"Laptop","ar":"حاسوب"},
  "finance.icon.store":{"en":"Store","ar":"متجر"},
  "finance.icon.trending-up":{"en":"Growth","ar":"نمو"},

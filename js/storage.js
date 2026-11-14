@@ -352,7 +352,9 @@ export function clearAll() {
   draft.transactions = [];
   draft.categories = defaultCategories();
   draft.budgets = {};
-  return saveConfirmed(draft);
+  const result = saveConfirmed(draft);
+  getStorage()?.removeItem(RECOVERY_KEY);
+  return result;
 }
 
 export function loadDemo() {

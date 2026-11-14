@@ -100,3 +100,27 @@ test('every static UI translation key exists in English and Arabic', async () =>
   }
   assert.deepEqual(missing, []);
 });
+
+test('corrupt local data stays untouched and updates are blocked until confirmed reset', async () => {
+  const raw = localStorage.getItem(store.STORAGE_KEY); localStorage.setItem(store.STORAGE_KEY, '{broken');
+  const isolated = await import('../js/storage.js?corruption-case');
+  isolated.getState(); assert.ok(isolated.getStorageWarning());
+  assert.throws(() => isolated.update(s => { s.prefs.name = 'Do not overwrite'; }));
+  assert.equal(localStorage.getItem(store.STORAGE_KEY), '{broken');
+  isolated.clearAll(); assert.equal(isolated.getState().transactions.length, 0); assert.equal(isolated.getStorageWarning(), null);
+  localStorage.setItem(store.STORAGE_KEY, raw);
+});
+test('backup bound is measured in UTF-8 bytes for Arabic text', () => {
+  const s = baseline(); s.padding = 'ع'.repeat(1100000); assert.throws(() => store.validateState(s));
+});
+test('early calendar years remain valid and clear-all removes recovery copy', () => {
+  const s = baseline(); s.transactions[0].date = '0001-01-01'; assert.ok(store.validateState(s));
+  store.restore(baseline()); assert.ok(store.recoveryBackup()); store.clearAll(); assert.equal(store.recoveryBackup(), null);
+});
+
+test('custom report charts aggregate all years without dropping old transactions', () => {
+  const rows = [row('old', 9, 'expense', '2019-02-03'), row('newest', 11, 'expense', '2026-11-14')];
+  const series = charts.rangeSeries(rows, '2019-01-01', '2026-12-31');
+  assert.equal(series.length, 8); assert.equal(series[0].expense, 9); assert.equal(series.at(-1).expense, 11);
+  assert.equal(series.reduce((n, x) => n + x.expense, 0), 20);
+});

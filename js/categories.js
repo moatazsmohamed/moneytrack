@@ -1,6 +1,6 @@
 import { getState, update, uid } from './storage.js';
-import { e, icon, empty, openModal, confirmDialog, toast } from './ui.js';
-import { t, catName } from './translations.js';
+import { e, icon, icons, empty, openModal, confirmDialog, toast } from './ui.js';
+import { t, catName, number } from './translations.js';
 
 const ICONS = ['tag', 'briefcase-business', 'banknote', 'chart-line', 'gift', 'utensils', 'car', 'shopping-bag', 'receipt', 'graduation-cap', 'heart-pulse', 'film', 'home', 'plane', 'wallet-cards', 'laptop', 'store', 'trending-up', 'circle-dollar-sign', 'car-front', 'receipt-text', 'popcorn', 'house', 'ellipsis'];
 const COLORS = ['#0f766e', '#2563eb', '#7c3aed', '#c2410c', '#db2777', '#0891b2', '#65a30d', '#ca8a04', '#475569', '#dc2626'];
@@ -82,10 +82,15 @@ async function deleteCategory(id) {
   const info = usedInfo(state, category);
   if (!info.used) {
     if (!await confirmDialog(t('finance.category.deleteTitle'), t('finance.category.deleteMessage', { name: catName(category) }))) return;
-    update((draft) => {
-      draft.categories = draft.categories.filter((item) => item.id !== id);
-      Object.values(draft.budgets || {}).forEach((budget) => { delete budget.categories[id]; });
-    });
+    try {
+      update((draft) => {
+        draft.categories = draft.categories.filter((item) => item.id !== id);
+        Object.values(draft.budgets || {}).forEach((budget) => { delete budget.categories[id]; });
+      });
+    } catch {
+      toast(t('storageError'), 'error');
+      return;
+    }
     toast(t('finance.category.deleted'));
     if (activeContainer) drawCategories(activeContainer);
     return;
@@ -104,13 +109,17 @@ async function deleteCategory(id) {
       const replacementId = String(form.get('replacementId') || '');
       const replacement = getState().categories.find((item) => item.id === replacementId && item.type === category.type && item.id !== id);
       if (!replacement) throw new Error(t('finance.validation.replacement'));
-      update((draft) => {
-        draft.transactions.forEach((transaction) => {
-          if (transaction.categoryId === id) transaction.categoryId = replacementId;
+      try {
+        update((draft) => {
+          draft.transactions.forEach((transaction) => {
+            if (transaction.categoryId === id) transaction.categoryId = replacementId;
+          });
+          Object.values(draft.budgets || {}).forEach((budget) => { delete budget.categories[id]; });
+          draft.categories = draft.categories.filter((item) => item.id !== id);
         });
-        Object.values(draft.budgets || {}).forEach((budget) => { delete budget.categories[id]; });
-        draft.categories = draft.categories.filter((item) => item.id !== id);
-      });
+      } catch {
+        throw new Error(t('storageError'));
+      }
       toast(t('finance.category.reassigned'));
       if (activeContainer) drawCategories(activeContainer);
       return true;
@@ -120,12 +129,13 @@ async function deleteCategory(id) {
 
 function categoryCard(category, state) {
   const usage = usedInfo(state, category);
-  return `<article class="category-card" data-category-id="${text(category.id)}"><div class="category-card-head"><span class="category-icon" style="--category-color:${text(safeColor(category.color))}">${icon(safeIcon(category.icon))}</span><div><h3>${text(catName(category))}</h3><p class="muted">${text(t(`finance.type.${category.type}`))}</p></div><div class="category-card-actions"><button type="button" class="icon-btn" data-edit-category="${text(category.id)}" aria-label="${text(t('finance.actions.edit'))}" title="${text(t('finance.actions.edit'))}">${icon('pencil')}</button><button type="button" class="icon-btn" data-delete-category="${text(category.id)}" aria-label="${text(t('finance.actions.delete'))}" title="${text(t('finance.actions.delete'))}">${icon('trash-2')}</button></div></div><div class="muted category-card-meta">${text(t('finance.category.usage', { count: usage.transactions, months: usage.budgetMonths }))}</div></article>`;
+  return `<article class="category-card" data-category-id="${text(category.id)}"><div class="category-card-head"><span class="category-icon" style="--category-color:${text(safeColor(category.color))}">${icon(safeIcon(category.icon))}</span><div><h3>${text(catName(category))}</h3><p class="muted">${text(t(`finance.type.${category.type}`))}</p></div><div class="category-card-actions"><button type="button" class="icon-btn" data-edit-category="${text(category.id)}" aria-label="${text(t('finance.actions.edit'))}" title="${text(t('finance.actions.edit'))}">${icon('pencil')}</button><button type="button" class="icon-btn" data-delete-category="${text(category.id)}" aria-label="${text(t('finance.actions.delete'))}" title="${text(t('finance.actions.delete'))}">${icon('trash-2')}</button></div></div><div class="muted category-card-meta">${text(t('finance.category.usage', { count: number(usage.transactions), months: number(usage.budgetMonths) }))}</div></article>`;
 }
 
 function drawCategories(container) {
   const state = getState();
-  container.innerHTML = `<div class="card" id="categories-card"><div class="card-head"><div><h2 class="section-title">${text(t('finance.category.listTitle'))}</h2><p class="muted">${text(t('finance.category.listDescription'))}</p></div><button type="button" class="btn btn-primary" data-add-category>${icon('plus')}<span>${text(t('finance.actions.add'))}</span></button></div>${state.categories.length ? `<div class="category-grid" id="categories-grid">${state.categories.map((category) => categoryCard(category, state)).join('')}</div>` : empty(t('finance.category.empty'), 'tags')}</div>`;
+  container.innerHTML = `<div class="page-head"><div><div class="eyebrow">${text(t('categoryEyebrow'))}</div><h1>${text(t('categories'))}</h1><p class="page-subtitle">${text(t('finance.category.listDescription'))}</p></div></div><div class="card" id="categories-card"><div class="card-head"><div><h2 class="section-title">${text(t('finance.category.listTitle'))}</h2><p class="muted">${text(t('finance.category.listDescription'))}</p></div><button type="button" class="btn btn-primary" data-add-category>${icon('plus')}<span>${text(t('finance.actions.add'))}</span></button></div>${state.categories.length ? `<div class="category-grid" id="categories-grid">${state.categories.map((category) => categoryCard(category, state)).join('')}</div>` : empty(t('finance.category.empty'), 'tags')}</div>`;
+  icons();
 }
 
 export function renderCategories(container) {

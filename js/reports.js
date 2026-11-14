@@ -2,7 +2,7 @@ import { getState, localDate, monthKey } from './storage.js';
 import { t, money, number, catName, formatDate } from './translations.js';
 import { e, icon, icons, empty, toast } from './ui.js';
 import { exportCSV } from './transactions.js';
-import { sum, inRange, monthRange, previousMonth, monthlySeries, categorySpending, incomeExpenseChart, doughnutChart, trendChart, monthLabel } from './charts.js';
+import { sum, inRange, monthRange, previousMonth, monthlySeries, rangeSeries, categorySpending, incomeExpenseChart, doughnutChart, trendChart, monthLabel } from './charts.js';
 import { statCard, legendHTML } from './dashboard.js';
 
 let period = 'thisMonth', customStart = monthRange(monthKey()).start, customEnd = localDate();
@@ -24,7 +24,7 @@ export function renderReports(container) {
   const rows = inRange(state.transactions, start, end), income = sum(rows, 'income'), expense = sum(rows, 'expense');
   const priorMonth = monthRange(previousMonth(end.slice(0, 7))), priorRows = inRange(state.transactions, priorMonth.start, priorMonth.end);
   const spending = categorySpending(rows), series = monthlySeries(state.transactions, end.slice(0, 7));
-  const rangeSeries = monthlySeries(rows, end.slice(0, 7));
+  const selectedSeries = rangeSeries(rows, start, end);
   container.innerHTML = `<div class="page-head"><div><div class="eyebrow">${t('understandMoney')}</div><h1>${t('reports')}</h1><p class="page-subtitle">${t('reportsSubtitle')}</p></div><div class="page-actions"><button class="btn btn-secondary" id="report-export">${icon('download')}${t('exportCSV')}</button></div></div>
     <div class="card" style="margin-bottom:20px"><div class="filter-bar"><span class="muted" style="font-size:12px">${icon('calendar-days')} ${t('dateRange')}</span><select class="select" id="report-period" aria-label="${t('dateRange')}">${['thisWeek','thisMonth','lastMonth','thisYear','custom'].map(key => `<option value="${key}" ${period === key ? 'selected' : ''}>${t(key)}</option>`).join('')}</select>${period === 'custom' ? `<label class="field"><span>${t('startDate')}</span><input type="date" id="report-start" value="${start}"></label><label class="field"><span>${t('endDate')}</span><input type="date" id="report-end" value="${end}"></label><button class="btn btn-primary" id="report-apply">${t('applyFilters')}</button>` : `<span class="muted" style="font-size:11px">${formatDate(start)} — ${formatDate(end)}</span>`}</div></div>
     <div class="summary-grid">${statCard(t('totalIncome'), income, 'arrow-down-left', sum(priorRows, 'income'))}${statCard(t('totalExpenses'), expense, 'arrow-up-right', sum(priorRows, 'expense'), '', true)}${statCard(t('netSavings'), income - expense, 'piggy-bank', sum(priorRows, 'income') - sum(priorRows, 'expense'))}<article class="stat-card"><div class="stat-top"><span class="stat-label">${t('savingsRate')}</span><span class="stat-icon">${icon('percent')}</span></div><div class="stat-value">${number(income ? (income - expense) / income * 100 : 0, 1)}%</div><div class="stat-foot">${t('savingsRateHint')}</div></article></div>
@@ -39,7 +39,7 @@ export function renderReports(container) {
     customStart = s; customEnd = en; window.dispatchEvent(new Event('moneytrack:render'));
   });
   container.querySelector('#report-export').addEventListener('click', () => { exportCSV(rows); toast(t('csvExported')); });
-  incomeExpenseChart('report-income', rangeSeries);
+  incomeExpenseChart('report-income', selectedSeries);
   doughnutChart('report-categories', spending);
   trendChart('report-trends', series);
   icons();

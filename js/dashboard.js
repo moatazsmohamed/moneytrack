@@ -29,7 +29,8 @@ export function renderDashboard(container) {
   const previousBalance = sum(past, 'income') - sum(past, 'expense');
   const series = monthlySeries(state.transactions, selectedMonth), spending = categorySpending(rows);
   const recent = rows.filter(x => recentType === 'all' || x.type === recentType).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
-  const budget = budgetSummary(selectedMonth);
+  const fullBudget = budgetSummary(selectedMonth);
+  const budget = { ...fullBudget, categories: fullBudget.categories.filter(item => item.budget > 0) };
   const percent = budget.total ? expense / budget.total * 100 : 0;
   container.innerHTML = `<div class="page-head"><div><div class="eyebrow">${t('financialWorkspace')}</div><h1>${t('overview')}</h1><p class="page-subtitle">${t('overviewSubtitle')}</p></div><div class="page-actions"><input class="month-control" type="month" id="dashboard-month" value="${selectedMonth}" aria-label="${t('selectMonth')}"><button class="btn btn-primary" id="dashboard-add">${icon('plus')}${t('addTransaction')}</button></div></div>
     ${state.transactions.some(x => x.demo) ? `<div class="demo-banner notice"><span>${icon('sparkles')}</span><span>${t('demoNotice')}</span><a class="btn btn-ghost" href="#settings" style="margin-inline-start:auto">${t('manageData')}${icon('arrow-up-right')}</a></div>` : ''}
