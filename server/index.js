@@ -7,6 +7,7 @@ import adminRouter from './admin.js';
 import { query } from './db.js';
 import { isEmailConfigured } from './email.js';
 import { isAllowedOrigin, requireAuth, requireReady, sendError } from './security.js';
+import { VERSION } from '../js/version.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const distRoot = path.resolve(here, '../dist');
@@ -85,10 +86,10 @@ export function createApp() {
   app.use(express.json({ limit: '2mb', strict: true }));
 
   app.get('/api/health', async (req, res) => {
-    try { await query('SELECT 1 AS ready'); res.json({ ok: true }); }
-    catch { res.status(503).json({ ok: false }); }
+    try { await query('SELECT 1 AS ready'); res.json({ ok: true, version: VERSION }); }
+    catch { res.status(503).json({ ok: false, version: VERSION }); }
   });
-  app.get('/api/public/config', (req, res) => res.json({ emailConfigured: isEmailConfigured(), version: '2.0.0' }));
+  app.get('/api/public/config', (req, res) => res.json({ emailConfigured: isEmailConfigured(), version: VERSION }));
   app.use('/api/auth', authRouter);
   app.use('/api', workspaceRouter);
   app.use('/api/admin', adminRouter);
