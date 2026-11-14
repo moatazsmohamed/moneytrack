@@ -87,6 +87,7 @@ document.getElementById('mobile-menu').addEventListener('click', () => {
 });
 document.getElementById('sidebar-overlay').addEventListener('click', navClosed);
 document.getElementById('main-nav').addEventListener('click', navClosed);
+document.getElementById('skip-link').addEventListener('click', ev => { ev.preventDefault(); document.getElementById('main-content').focus(); });
 document.getElementById('notification-toggle').addEventListener('click', ev => {
   ev.stopPropagation(); const panel = document.getElementById('notification-panel'); panel.hidden = !panel.hidden;
   ev.currentTarget.setAttribute('aria-expanded', String(!panel.hidden));

@@ -3,7 +3,7 @@ import { e, icon, icons, empty, openModal, confirmDialog, toast, download } from
 import { t, money, number, formatDate, catName } from './translations.js';
 
 export const PAGE_SIZE = 10;
-const SORT_MODES = ['newest', 'oldest'];
+const SORT_MODES = ['newest', 'oldest', 'highest', 'lowest'];
 const filters = { search: '', type: 'all', category: 'all', start: '', end: '', sort: 'newest', page: 1 };
 const resetFilters = () => Object.assign(filters, { search: '', type: 'all', category: 'all', start: '', end: '', sort: 'newest', page: 1 });
 function realDate(value) {

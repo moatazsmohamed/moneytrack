@@ -12,6 +12,7 @@ export async function runSmoke() {
   const route = async page => { location.hash = page; await delay(); };
   const submit = async () => { select('#modal-root form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); await delay(); };
   try {
+    await route('dashboard');
     store.clearAll(); await delay();
     check('Empty dashboard renders four live Chart.js charts', ['income-expenses-chart','category-chart','spending-chart','trends-chart'].every(id => !!Chart.getChart(id)));
     for (const page of ['transactions','categories','budgets','reports','settings','dashboard']) { await route(page); check('Navigation: ' + page, document.title.toLowerCase().includes(page === 'dashboard' ? 'overview' : page)); }
@@ -26,7 +27,7 @@ export async function runSmoke() {
     await click('[data-delete-tx]'); await click('#modal-root .btn-secondary');
     check('Cancel delete preserves transaction', store.getState().transactions.length === 1);
     await click('[data-delete-tx]'); await submit(); check('Confirm delete removes transaction and updates charts', store.getState().transactions.length === 0 && Chart.getChart('category-chart').data.labels[0] === 'No expenses in this period');
-    await route('transactions'); await click('[data-add-transaction]'); set('#transaction-title', 'Income test'); set('#transaction-type', 'income', 'change'); set('#transaction-amount', '1000'); await submit();
+    await route('transactions'); await click('[data-reset-transaction-filters]'); await click('[data-add-transaction]'); set('#transaction-title', 'Income test'); set('#transaction-type', 'income', 'change'); set('#transaction-amount', '1000'); await submit();
     check('Add income selects matching category', store.getState().transactions[0].type === 'income');
     const today = store.localDate();
     store.update(s => { for (let i = 0; i < 24; i++) s.transactions.push({ id: 'smoke-' + i, title: 'Payment ' + i, description: i === 7 ? 'needle memo' : '', amount: i + 1, type: 'expense', categoryId: 'food', date: today }); }); await delay();

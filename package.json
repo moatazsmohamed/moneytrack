@@ -1,9 +1,9 @@
 {
   "name": "moneytrack",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
-  "description": "Local-first bilingual personal finance app — HTML, CSS, Vanilla JavaScript",
+  "description": "Local-first bilingual personal finance app \u2014 HTML, CSS, Vanilla JavaScript",
   "scripts": {
     "dev": "python3 -m http.server 3000 --bind 0.0.0.0",
     "build": "python3 build.py",
