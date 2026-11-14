@@ -1,0 +1,20 @@
+{
+ "transactionEyebrow":{"en":"Every detail, in one place","ar":"كل التفاصيل في مكان واحد"},
+ "transactionSubtitle":{"en":"Keep a clear record of what comes in and what goes out.","ar":"سجل واضح لكل ما يدخل إلى أموالك وما يخرج منها."},
+ "resetFilters":{"en":"Reset filters","ar":"إعادة ضبط الفلاتر"},
+ "savedLocally":{"en":"Saved locally on this device","ar":"محفوظ محلياً على هذا الجهاز"},
+ "showingRows":{"en":"Showing {start}–{end} of {total}","ar":"عرض {start}–{end} من {total}"},
+ "budgetSubtitle":{"en":"Give every pound a purpose, one month at a time.","ar":"حدد هدفاً لكل جنيه، شهراً بعد شهر."},
+ "budgetEyebrow":{"en":"Spend with intention","ar":"إنفاق وفق خطة"},
+ "categoryEyebrow":{"en":"A place for every transaction","ar":"فئة لكل معاملة"},
+ "unallocated":{"en":"No category budget set","ar":"لم تُحدد ميزانية لهذه الفئة"},
+ "finance.icon.laptop":{"en":"Laptop","ar":"حاسوب"},
+ "finance.icon.store":{"en":"Store","ar":"متجر"},
+ "finance.icon.trending-up":{"en":"Growth","ar":"نمو"},
+ "finance.icon.circle-dollar-sign":{"en":"Income","ar":"دخل"},
+ "finance.icon.car-front":{"en":"Transport","ar":"مواصلات"},
+ "finance.icon.receipt-text":{"en":"Bills","ar":"فواتير"},
+ "finance.icon.popcorn":{"en":"Leisure","ar":"ترفيه"},
+ "finance.icon.house":{"en":"Housing","ar":"سكن"},
+ "finance.icon.ellipsis":{"en":"Other","ar":"أخرى"}
+}
