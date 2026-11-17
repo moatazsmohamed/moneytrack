@@ -34,4 +34,7 @@ for (const name of ['login','register','forgot-password','reset-password','verif
 fs.mkdirSync(path.join(dist,'en'), {recursive:true});
 fs.copyFileSync(path.join(root,'public/en/index.html'), path.join(dist,'en/index.html'));
 fs.writeFileSync(path.join(dist,'robots.txt'), 'User-agent: *\nAllow: /\nDisallow: /app\nDisallow: /admin\nDisallow: /api/\nDisallow: /reset-password\nDisallow: /verify-email\n');
+// Vercel serves static files from public/** through its CDN and ignores express.static(),
+// so the browser assets are published there as well. Protected pages stay in dist only.
+for (const directory of ['css','js','assets']) fs.cpSync(path.join(root, directory), path.join(root, 'public', directory), { recursive: true });
 console.log(`Built MoneyTrack 2.0.0: ${Object.keys(merged).length} bilingual keys; static output excludes secrets and backend files.`);

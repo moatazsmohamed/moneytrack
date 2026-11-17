@@ -1,11 +1,12 @@
 /**
  * Vercel entry point.
  *
- * Vercel's zero-configuration Express detection looks for an `app`, `index` or `server`
- * module at the project root (or under `src/`) that default-exports the Express app.
- * Keeping the Express instance exportable here means the same application code runs
- * locally through `server/index.js` and on Vercel as a single Function.
+ * Vercel's zero-configuration Express preset looks for an `app`, `index` or `server`
+ * module at the project root (or under `src/`) that imports `express` and default-exports
+ * the application. The framework import below is what the preset inspects, so it must
+ * stay in this file even though the application itself is assembled in `server/index.js`.
  */
+import express from 'express';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -24,6 +25,8 @@ if (!process.env.MONEYTRACK_DIST_ROOT) {
   const found = candidates.find((dir) => fs.existsSync(path.join(dir, 'index.html')));
   if (found) process.env.MONEYTRACK_DIST_ROOT = found;
 }
+
+if (typeof express !== 'function') throw new TypeError('The express framework is unavailable.');
 
 const app = createApp();
 
