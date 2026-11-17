@@ -43,7 +43,7 @@ pnpm bootstrap:admin
 ## Vercel والخادم
 `vercel.json` ينشر التطبيق كدالة Serverless واحدة: `app.js` يصدّر تطبيق Express كـ`default export` (وهو ما يتعرف عليه Vercel تلقائياً)، و`buildCommand` يبني `dist/`، و`includeFiles` يضمّن `dist/` و`db/migrations/` و`js/` داخل حزمة الدالة. كل المسارات (صفحات، أصول ثابتة، API) يخدمها نفس تطبيق Express، لذلك حماية الجلسة على `/app` و`/admin` تعمل كما في التشغيل المحلي.
 المتغيرات المطلوبة على Vercel: `DATABASE_URL`، و`PUBLIC_APP_URL` (النطاق العام الفعلي)، و`CRON_SECRET` عند تفعيل الجدولة، ومتغيرات SMTP. لا تضبط `MONEYTRACK_LOCAL_HTTP` في الإنتاج. الكوكيز `Secure` و`SameSite=None` وتُضبط بلا `Domain`، لذا تعمل على نطاق Vercel ونطاقك المخصص.
-جدولة Vercel تدعم GET فقط، لذلك المسار `/api/cron/recurring` يقبل GET وPOST بنفس تحقق `Authorization: Bearer <CRON_SECRET>`، و`vercel.json` يسجله كل ساعة.
+جدولة Vercel تدعم GET فقط، لذلك المسار `/api/cron/recurring` يقبل GET وPOST بنفس تحقق `Authorization: Bearer <CRON_SECRET>`، و`vercel.json` يسجله يومياً (خطة Hobby تسمح بمهمة واحدة يومياً فقط؛ على Pro يمكن تغييره إلى `0 * * * *`).
 بعد النشر اختبر `/api/health` (200)، و`/api/public/config` (2.0.0)، ومجهولاً `/app` و`/admin` (توجيه للدخول)، ودخول USER/ADMIN في جلسات منفصلة. لا تصدر روابط المعاينة كاستضافة دائمة، ولا تخزن بيانات DB في البيئة الأمامية.
 
 ## النسخ والترحيل
