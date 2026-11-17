@@ -412,5 +412,7 @@ router.patch('/notification-preferences', ...privateWrite, wrap(notificationPref
 router.get('/public/content', wrap(publicContent));
 router.post('/public/contact', csrfGuard, wrap(publicContact));
 router.post('/cron/recurring', wrap(cronRecurring));
+// Vercel Cron Jobs only issue GET requests; the bearer secret check is identical.
+router.get('/cron/recurring', wrap(cronRecurring));
 
 export { router as default, readSnapshot, ensureSettings, normalizeImport };

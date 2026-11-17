@@ -3,6 +3,8 @@ import { createPool } from 'mysql2/promise';
 import { defaultCategories } from '../js/legacy-storage.js';
 
 const databaseUrl = process.env.DATABASE_URL;
+// Serverless hosts (Vercel) run many short-lived instances, so each one keeps a small pool.
+const DEFAULT_CONNECTION_LIMIT = process.env.VERCEL ? 4 : 16;
 
 function connectionOptions(rawUrl) {
   const parsed = new URL(rawUrl);
@@ -13,10 +15,10 @@ function connectionOptions(rawUrl) {
     password: decodeURIComponent(parsed.password),
     database: decodeURIComponent(parsed.pathname.replace(/^\//, '')),
     waitForConnections: true,
-    connectionLimit: Number(process.env.DB_CONNECTION_LIMIT || 16),
+    connectionLimit: Number(process.env.DB_CONNECTION_LIMIT || DEFAULT_CONNECTION_LIMIT),
     queueLimit: 0,
     // Opening a TLS connection to the managed database costs ~2 s; keep idle connections alive.
-    maxIdle: Number(process.env.DB_CONNECTION_LIMIT || 16),
+    maxIdle: Number(process.env.DB_CONNECTION_LIMIT || DEFAULT_CONNECTION_LIMIT),
     idleTimeout: 5 * 60 * 1000,
     enableKeepAlive: true,
     keepAliveInitialDelay: 10000,

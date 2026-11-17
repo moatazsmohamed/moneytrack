@@ -5,7 +5,9 @@
   "type": "module",
   "description": "Bilingual multi-user finance platform — HTML, CSS, Vanilla JavaScript, Node.js and MySQL",
   "packageManager": "pnpm@11.25.0",
-  "engines": { "node": ">=22.23.0" },
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "node --env-file-if-exists=.env server/index.js",
     "start": "node --env-file-if-exists=.env server/index.js",
@@ -13,7 +15,8 @@
     "migrate": "node --env-file-if-exists=.env server/migrate.js",
     "bootstrap:admin": "node --env-file-if-exists=.env scripts/bootstrap-admin.js",
     "test": "node --test tests/*.test.js",
-    "test:integration": "node --env-file-if-exists=.env --test tests/integration/*.test.js"
+    "test:integration": "node --env-file-if-exists=.env --test tests/integration/*.test.js",
+    "vercel-build": "node scripts/build.js"
   },
   "dependencies": {
     "express": "5.3.0",

@@ -41,9 +41,9 @@ pnpm bootstrap:admin
 للتشغيل بينما الحساب مغلق، ضع `CRON_SECRET` عشوائياً قوياً في البيئة الخادمية، واستخدم جدولة أصلية موثوقة تدعو `POST /api/cron/recurring` على الأصل الخلفي مع `Authorization: Bearer <CRON_SECRET>`. لا تضع المفتاح في URL أو Frontend أو Git. عند غيابه يعيد المسار 503، ولرمز غير صحيح 403. اختر معدل الجدولة وفق حدود مزودك، ثم تحقق من توليد الاستحقاق مرة واحدة. لا توجد جدولة خارجية مفعلة في هذه المرحلة ولا يُدعى أنها تعمل.
 
 ## Vercel والخادم
-
-`vercel.json` يوجه جميع الطلبات إلى أصل الخادم الدائم. خرج `vercel-public/` لا يحتوي صفحات حساب محمية قابلة للتقديم مباشرة. يجري الخادم فحص الجلسة على `/app` و`/app.html`، وفحص صلاحيات الإدارة على `/admin` و`/admin.html`. الكوكيز لا تحدد Domain، لذا يحملها المتصفح على نطاق Vercel نفسه عبر rewrite.
-
+`vercel.json` ينشر التطبيق كدالة Serverless واحدة: `app.js` يصدّر تطبيق Express كـ`default export` (وهو ما يتعرف عليه Vercel تلقائياً)، و`buildCommand` يبني `dist/`، و`includeFiles` يضمّن `dist/` و`db/migrations/` و`js/` داخل حزمة الدالة. كل المسارات (صفحات، أصول ثابتة، API) يخدمها نفس تطبيق Express، لذلك حماية الجلسة على `/app` و`/admin` تعمل كما في التشغيل المحلي.
+المتغيرات المطلوبة على Vercel: `DATABASE_URL`، و`PUBLIC_APP_URL` (النطاق العام الفعلي)، و`CRON_SECRET` عند تفعيل الجدولة، ومتغيرات SMTP. لا تضبط `MONEYTRACK_LOCAL_HTTP` في الإنتاج. الكوكيز `Secure` و`SameSite=None` وتُضبط بلا `Domain`، لذا تعمل على نطاق Vercel ونطاقك المخصص.
+جدولة Vercel تدعم GET فقط، لذلك المسار `/api/cron/recurring` يقبل GET وPOST بنفس تحقق `Authorization: Bearer <CRON_SECRET>`، و`vercel.json` يسجله كل ساعة.
 بعد النشر اختبر `/api/health` (200)، و`/api/public/config` (2.0.0)، ومجهولاً `/app` و`/admin` (توجيه للدخول)، ودخول USER/ADMIN في جلسات منفصلة. لا تصدر روابط المعاينة كاستضافة دائمة، ولا تخزن بيانات DB في البيئة الأمامية.
 
 ## النسخ والترحيل

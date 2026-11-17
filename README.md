@@ -47,7 +47,7 @@ pnpm dev
 - `server/`: الهوية والجلسات والتفويض والبريد وواجهات البيانات والإدارة.
 - `db/migrations/`: SQL منظّم قابل للتطبيق بالتتابع.
 - `scripts/build.js`: بناء ملفات الواجهة، و`Dockerfile`: نشر الخادم.
-- `scripts/build-vercel.js` و`vercel.json`: واجهة proxy إلى أصل الخادم؛ لا تنشر HTML الإدارة خارج حارس الجلسة.
+- `app.js` و`vercel.json`: نشر حقيقي على Vercel كـ Serverless Function واحدة؛ Express يقدّم الصفحات والـAPI، و`dist/` يُضمَّن في حزمة الدالة عبر `includeFiles`. لا تنشر HTML الإدارة خارج حارس الجلسة.
 - `docs/SETUP.md` و`docs/SECURITY_SOURCES.md`: الإعداد ومراجع قرارات الأمان.
 - `tests/`: اختبارات الوحدات والتكامل. `TESTED_FEATURES.md`: سجل نتائج حقيقية.
 

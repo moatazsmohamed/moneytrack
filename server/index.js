@@ -10,7 +10,11 @@ import { isAllowedOrigin, requireAuth, requireReady, sendError } from './securit
 import { VERSION } from '../js/version.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const distRoot = path.resolve(here, '../dist');
+// Resolved when the app is created so a host (Vercel) can point at its bundled static build.
+let distRoot = path.resolve(here, '../dist');
+function resolveDistRoot() {
+  return process.env.MONEYTRACK_DIST_ROOT ? path.resolve(process.env.MONEYTRACK_DIST_ROOT) : path.resolve(here, '../dist');
+}
 const PUBLIC_PAGES = ['login', 'register', 'forgot-password', 'reset-password', 'verify-email', 'resend-verification', 'privacy', 'terms', 'contact'];
 
 function parseCookies(req, res, next) {
@@ -71,6 +75,7 @@ async function protectAdminHtml(req, res) {
 }
 
 export function createApp() {
+  distRoot = resolveDistRoot();
   const app = express();
   app.disable('x-powered-by');
   app.set('trust proxy', true);
