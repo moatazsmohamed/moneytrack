@@ -5,14 +5,14 @@ import {
   HttpError, csrfGuard, checkRateLimit, hashPassword, verifyPassword, validatePassword,
   normalizeEmail, validateFullName, randomToken, sha256, userDto, getSessionToken,
   SESSION_COOKIE, PREAUTH_COOKIE, cookieOptions, clearCookieOptions, setCsrfCookie,
-  requireAuth, sendError,
+  requireAuth, sendError, clientIp,
 } from './security.js';
 import { isEmailConfigured, sendVerificationEmail, sendPasswordResetEmail } from './email.js';
 
 const router = express.Router();
 const asyncRoute = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 const nowPlus = (minutes) => new Date(Date.now() + minutes * 60 * 1000);
-const ipKey = (req, suffix) => `${suffix}:${req.ip || req.socket?.remoteAddress || 'unknown'}`;
+const ipKey = (req, suffix) => `${suffix}:${clientIp(req)}`;
 
 function body(req) { return req.body && typeof req.body === 'object' && !Array.isArray(req.body) ? req.body : {}; }
 function requireConfirmPassword(password, confirmPassword) { if (password !== confirmPassword) throw new HttpError(400, 'PASSWORD_MISMATCH', 'Passwords do not match.'); }
@@ -102,9 +102,13 @@ router.post('/register', csrfGuard, asyncRoute(async (req, res) => {
 }));
 
 router.post('/login', csrfGuard, asyncRoute(async (req, res) => {
-  await rate(req, 'login', 12, 900);
   const input = body(req);
   const email = normalizeEmail(input.email);
+  await rate(req, 'login', 12, 900);
+  // Per-account ceiling so rotating the source address cannot buy unlimited guesses.
+  if (!(await checkRateLimit(`login-account:${sha256(email)}`, 25, 900))) {
+    throw new HttpError(429, 'RATE_LIMITED', 'Too many attempts. Try again later.');
+  }
   const rows = await query(`SELECT p.id,p.email,p.password_hash,p.full_name,p.status,p.email_verified,p.must_change_password,p.session_version,p.created_at,r.role,r.permissions_json
     FROM mt_profiles p JOIN mt_user_roles r ON r.user_id=p.id WHERE p.email=? LIMIT 1`, [email]);
   const row = rows[0];

@@ -40,6 +40,27 @@ export function sendError(res, error) {
 export function randomToken(bytes = 32) { return crypto.randomBytes(bytes).toString('base64url'); }
 export function sha256(value) { return crypto.createHash('sha256').update(value).digest('hex'); }
 
+/**
+ * Stable client address used for rate-limit keys.
+ *
+ * `req.ip` is not stable behind Vercel: with `trust proxy` enabled Express derives it
+ * from X-Forwarded-For, which the edge rewrites per request, so every attempt created
+ * a brand-new counter row and the limiter never fired. Vercel sets `x-real-ip` to the
+ * real client address; the last X-Forwarded-For hop is the nearest proxy and cannot be
+ * spoofed by the caller.
+ */
+export function clientIp(req) {
+  const headers = req?.headers ?? {};
+  const real = String(headers['x-real-ip'] ?? '').trim();
+  if (real) return real;
+  const forwarded = String(headers['x-forwarded-for'] ?? '')
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean);
+  if (forwarded.length) return forwarded[forwarded.length - 1];
+  return req?.ip || req?.socket?.remoteAddress || 'unknown';
+}
+
 export function validatePassword(password, { bootstrap = false } = {}) {
   if (typeof password !== 'string') throw new HttpError(400, 'INVALID_PASSWORD', 'Password is invalid.');
   if (password.length > 256) throw new HttpError(400, 'INVALID_PASSWORD', 'Password is too long.');
