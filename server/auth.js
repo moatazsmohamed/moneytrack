@@ -106,7 +106,7 @@ router.post('/login', csrfGuard, asyncRoute(async (req, res) => {
   const email = normalizeEmail(input.email);
   await rate(req, 'login', 12, 900);
   // Per-account ceiling so rotating the source address cannot buy unlimited guesses.
-  if (!(await checkRateLimit(`login-account:${sha256(email)}`, 25, 900))) {
+  if (!(await checkRateLimit(`login-account:${sha256(email)}`, 10, 900))) {
     throw new HttpError(429, 'RATE_LIMITED', 'Too many attempts. Try again later.');
   }
   const rows = await query(`SELECT p.id,p.email,p.password_hash,p.full_name,p.status,p.email_verified,p.must_change_password,p.session_version,p.created_at,r.role,r.permissions_json
