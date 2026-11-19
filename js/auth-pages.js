@@ -33,8 +33,14 @@ async function submitRegister(form) {
   setBusy(form, true);
   try {
     const result = await publicApi('/auth/register', { method: 'POST', body: { fullName: data.fullName, email: data.email, password: data.password, confirmPassword: data.confirmPassword, acceptTerms: true, language: getPublicPrefs().language } });
-    if (result.verificationRequired) { message(form, getPublicPrefs().language === 'ar' ? 'تم إنشاء الحساب. تحقق من بريدك الإلكتروني قبل تسجيل الدخول.' : 'Your account was created. Verify your email before logging in.', 'success'); form.reset(); }
-    else message(form, getPublicPrefs().language === 'ar' ? 'تم إنشاء الحساب.' : 'Your account was created.', 'success');
+    const ar = getPublicPrefs().language === 'ar';
+    if (result.verificationRequired) { message(form, ar ? 'تم إنشاء الحساب. تحقق من بريدك الإلكتروني قبل تسجيل الدخول.' : 'Your account was created. Verify your email before logging in.', 'success'); form.reset(); }
+    else if (result.emailDisabled) {
+      message(form, ar ? 'تم إنشاء الحساب بنجاح. خدمة البريد غير مهيأة حاليًا، فالحساب جاهز للدخول مباشرةً.' : 'Your account is ready. Email delivery is not configured right now, so you can sign in directly.', 'success');
+      form.reset();
+      setTimeout(() => { window.location.href = '/login'; }, 1500);
+    }
+    else message(form, ar ? 'تم إنشاء الحساب.' : 'Your account was created.', 'success');
   } catch (error) { message(form, err(error)); }
   finally { setBusy(form, false); }
 }

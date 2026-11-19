@@ -71,7 +71,9 @@ router.get('/me', asyncRoute(async (req, res) => {
 
 router.post('/register', csrfGuard, asyncRoute(async (req, res) => {
   await rate(req, 'register', 8, 3600);
-  if (!isEmailConfigured()) throw new HttpError(503, 'EMAIL_UNAVAILABLE', 'Email service is not configured. Please try again later.');
+  // Signing up must never dead-end: without a mail server the account is created
+  // already verified, and the client is told that email is disabled.
+  const emailReady = isEmailConfigured();
   const input = body(req);
   const fullName = validateFullName(input.fullName);
   const email = normalizeEmail(input.email);
@@ -86,7 +88,7 @@ router.post('/register', csrfGuard, asyncRoute(async (req, res) => {
   try {
     profile = await transaction(async (conn) => {
       const id = uuid();
-      await conn.execute(`INSERT INTO mt_profiles (id,email,password_hash,full_name,status,email_verified,must_change_password) VALUES (?,?,?,?, 'active', FALSE, FALSE)`, [id, email, passwordHash, fullName]);
+      await conn.execute(`INSERT INTO mt_profiles (id,email,password_hash,full_name,status,email_verified,must_change_password) VALUES (?,?,?,?, 'active', ?, FALSE)`, [id, email, passwordHash, fullName, emailReady ? false : true]);
       await conn.execute(`INSERT INTO mt_user_roles (user_id,role,permissions_json) VALUES (?, 'USER', ?)`, [id, JSON.stringify([])]);
       await seedWorkspace(id, conn, language);
       token = await createEmailToken(conn, id, 'verify_email', { language }, 1440);
@@ -96,9 +98,18 @@ router.post('/register', csrfGuard, asyncRoute(async (req, res) => {
     if (error?.code === 'ER_DUP_ENTRY') throw new HttpError(409, 'EMAIL_EXISTS', 'An account with this email already exists.');
     throw error;
   }
-  try { await sendVerificationEmail({ to: profile.email, fullName: profile.fullName, token, language }); }
-  catch (error) { throw new HttpError(503, error.code === 'EMAIL_DELIVERY_FAILED' ? 'EMAIL_DELIVERY_FAILED' : 'EMAIL_UNAVAILABLE', 'We could not send the verification email. Please try again later.'); }
-  res.status(201).json({ verificationRequired: true });
+  let emailSent = false;
+  if (emailReady) {
+    try {
+      await sendVerificationEmail({ to: profile.email, fullName: profile.fullName, token, language });
+      emailSent = true;
+    } catch (error) {
+      // the account already exists, so a mail outage must not lock the owner out
+      await query('UPDATE mt_profiles SET email_verified=TRUE WHERE id=?', [profile.id]);
+      console.error('[auth] verification email failed, account auto-verified:', error?.code || error?.message);
+    }
+  }
+  res.status(201).json({ verificationRequired: emailSent, emailDisabled: !emailSent });
 }));
 
 router.post('/login', csrfGuard, asyncRoute(async (req, res) => {
